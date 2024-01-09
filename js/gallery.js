@@ -66,47 +66,61 @@ const images = [
 
 const gallery = document.querySelector(".gallery");
 
-function createMarkup(arr) {
-  return arr
-    .map(
-      ({ preview, original, description }) => `
-    <li class="gallery-item">
-  <a class="gallery-link" href="${original}">
+const markup = images
+  .map((element) => {
+    return `
+  <li class="gallery-item">
+  <a class="gallery-link" href="${element.original}">
     <img
       class="gallery-image"
-      src="${preview}"
-      data-source="${original}"
-      alt="${description}"
+      src="${element.preview}"
+      data-source="${element.original}"
+      alt="${element.description}"
     />
   </a>
-</li>
-    `
-    )
-    .join("");
-}
+</li>`;
+  })
+  .join("");
 
-gallery.innerHTML = createMarkup(images);
+gallery.innerHTML = markup;
 
-function eventClick(event) {
+gallery.addEventListener("click", handleImageClick);
+
+function handleImageClick(event) {
   event.preventDefault();
-  const src = event.currentTarget.href;
-  const instance = basicLightbox.create(`
-	<div class = "modal">
-    <div class = "modalBody">
-    <img class= "modalImage" src = "${src}"></img>
+
+  if (event.target === event.currentTarget) {
+    return;
+  }
+  const img = event.target.closest(".gallery-image");
+  const content = `
+    <div class ="modal">  
+    <div class ="modalBody">  
+    <img
+      class="modalImage"
+      src="${img.getAttribute("data-source")}"      
+      alt="${img.getAttribute("alt")}"
+    />
     </div>
     </div>
-`);
+    
+`;
+  const options = {
+    onShow: (instance) => {
+      console.log(instance);
+      const elem = instance.element();
+      console.log(elem);
+      document.body.addEventListener("keydown", (event) => {
+        console.log(event);
+        if (event.key === "Escape") {
+          instance.close();
+        }
+      });
+    },
+    onClose: (instance) => {},
+  };
+  console.log(img.getAttribute("data-source"));
+  const instance = basicLightbox.create(content, options);
+
   instance.show();
-  document.body.style.position = "fixed";
-  document.body.addEventListener("keydown", (event) => {
-    if (event.code === "Escape") {
-      instance.close();
-      document.body.style.position = "";
-    }
-  });
 }
-
-const galleryLinks = document.querySelectorAll(".gallery-link");
-
-galleryLinks.forEach((item) => item.addEventListener("click", eventClick));
